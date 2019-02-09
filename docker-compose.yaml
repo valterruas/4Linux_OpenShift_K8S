@@ -1,22 +1,12 @@
 version: '3'
 
-services:
- site:
-  image: valterruas/ivar-site
-  hostname: ivar
-  container_name: ivarsite
-  ports:
-   - 8081:80
-
-version: '3'
-
 volumes:
  repo:
-
+ portainer_data:
 
 services:
  site:
-  image: gpolicante/ivar-site
+  image: valterruas/ivar_site
   hostname: ivar
   container_name: ivarsite
   ports:
@@ -35,3 +25,21 @@ services:
     - /sys:/sys:ro
     - /var/lib/docker:/var/lib/docker:ro
     - /dev/disk:/dev/disk:ro
+
+ portainer:
+  image: portainer/portainer
+  ports:
+   - 9001:9000
+  volumes:
+   - /var/run/docker.sock:/var/run/docker.sock
+   - portainer_data:/data
+
+ reverse-proxy:
+  image: traefik
+  command:
+   - "--api"
+   - "--docker"
+   - "--web"
+  ports:
+   - 80:80
+   - 8080:8080
