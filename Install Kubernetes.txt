@@ -20,3 +20,21 @@ yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 systemctl enable --now kubelet
 
 swapoff -a 
+
+
+# Rodar o comando abaixo para reiniciar o servidor
+init 6
+# Rodar o comando abaixo para verificar se o SELinux foi desabilitado, precisa retornar a msg "setenforce: SELinux is disabled";
+setenforce 0
+
+# Rodar os comandos abaixo para habilitar o modo de roteamento em os servidores. Rodar em todos os nós do cluster.
+
+cat <<EOF >  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+
+
+# Rodar o comando abaixo para atualizar os pacotes para as ultimas versões.
+yum update -y
