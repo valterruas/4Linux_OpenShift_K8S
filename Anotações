@@ -8,3 +8,8 @@ docker pull centurylink/dockerfile-from-image
 
 Tabela de Kubernetes
 https://kubernetes.io/docs/setup/pick-right-solution/#table-of-solutions
+
+
+kubeadm = provider cluster
+kubelet = é o api server
+kubectl = binario 
