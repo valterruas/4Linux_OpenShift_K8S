@@ -20,6 +20,9 @@ yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 systemctl enable --now kubelet
 
 swapoff -a 
+# Editar o arquivo FSTAB e comentar a linha do Swap
+vim /etc/fstab
+
 
 
 # Rodar o comando abaixo para reiniciar o servidor
@@ -38,3 +41,55 @@ sysctl --system
 
 # Rodar o comando abaixo para atualizar os pacotes para as ultimas versões.
 yum update -y
+
+# Rodar o comando abaixo para baixar as imagens padrão do Kubernetes
+systemctl start docker
+systemctl enable docker
+kubeadm config images pull
+
+# Rodar os comandos abaixo para parar e desativar os firewall nativos, rodar em todos os nós
+
+systemctl stop firewalld
+systemctl disable firewalld
+
+# Rodar o comando abaixo apenas na maquina "Master"
+# pod-network-cidr define qual a rede dos pods
+# apiserver-advertise-address - caso tenha mais de uma placa de rede, definir o IP da placa de rede que será utilizada como principal
+kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.1.10
+
+# Será gerado um comando igual ao debaixo, copiar e executar o comando nos outros nós do Cluster
+# Exemplo: kubeadm join 192.168.1.10:6443 --token 1gh0g4.es1fvjoq2nbpkt0b --discovery-token-ca-cert-hash sha256:cdf08a112f5da4044e3114b089ac5752fb64b3f3e2d113ceb1ff1aeaaf068290
+
+#Rodar o comando abaixo para dar permissão de gerenciar o cluster pela maquina Master
+# export KUBECONFIG=/etc/kubernetes/admin.conf
+echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> /etc/profile
+
+#Ou seguindo a documentação rodar os comandos abaixo que terá o mesmo efeito
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Comando para fazer o deploy do serviço do Weave de acordo com a versão do Docker instalado
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+# Rodar os comando abaixo para acompanhar o status da criação dos PODs do Weave, e ver se os nodes do Cluster estão Ready
+kubectl get nodes
+kubectl get pods --all-namespaces
+
+# O Token para adicionar novos Nodes do Cluster expira em 24 horas. Caso seja necessário rodas os comandos abaixo para gerar novos token
+
+$token1=kubeadm token create
+$token2=openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | \
+openssl dgst -sha256 -hex | sed 's/^.* //'
+kubeadm join 192.168.1.10:6443 --token $token1 --discovery-token-ca-cert-hash sha256:$token2
+
+# Comando para rodar PODs no node Master, pq por default no node Master não roda PODs. Precisa retornar string "node/master.kubernetes.os untainted" no node Master e os nodes como "not found"
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+# Comando para mudar a role do nó do Cluster para Woker
+kubectl label node node1.kubernetes.os node-role.kubernetes.io/worker=worker
+kubectl label node node2.kubernetes.os node-role.kubernetes.io/worker=worker
+
+# Comando para deletar a maquina do Cluster
+kubectl drain node1.kubernetes.os --delete-local-data --force --ignore-daemonsets
+kubectl delete node node1.kubernetes.os
