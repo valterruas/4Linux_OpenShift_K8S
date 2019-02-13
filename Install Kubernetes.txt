@@ -52,6 +52,9 @@ kubeadm config images pull
 systemctl stop firewalld
 systemctl disable firewalld
 
+# Seguir a documentação abaixo para habilitar o auto complete do comando kubectl
+https://kubernetes.io/docs/tasks/tools/install-kubectl/#enabling-shell-autocompletion
+
 # Rodar o comando abaixo apenas na maquina "Master"
 # pod-network-cidr define qual a rede dos pods
 # apiserver-advertise-address - caso tenha mais de uma placa de rede, definir o IP da placa de rede que será utilizada como principal
@@ -90,6 +93,100 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 kubectl label node node1.kubernetes.os node-role.kubernetes.io/worker=worker
 kubectl label node node2.kubernetes.os node-role.kubernetes.io/worker=worker
 
-# Comando para deletar a maquina do Cluster
+####
+# Comando para deletar a maquina do Cluster (rodar os dois comandos abaixo no master).
 kubectl drain node1.kubernetes.os --delete-local-data --force --ignore-daemonsets
 kubectl delete node node1.kubernetes.os
+
+# Ir no node que foi removido e rodar o comando abaixo, caso não faça isso o node será reingressado automaticamente no cluster novamente.
+kubeadm reset
+y
+
+# Na saida do comando acima irá exibir um comando de exemplo do IPTABLES, copie esse comando e rode no node que está sendo excluido para remover as rotas do node.
+iptables -F && iptables -t nat -F && iptables -t mangle -F && iptables -X
+####
+
+# Rodar o comando abaixo para habilitar a interface grafica via https
+kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+kubectl proxy --address=192.168.1.10 &
+# No comando acima irá aparacer "Starting to serve on 192.168.1.10:8001" pode dar ENTER
+# Rodar o comando abaixo para editar o serviço "kubernetes-dashboard"
+kubectl -n kube-system edit service kubernetes-dashboard
+# Alterar a linha "type: ClusterIP" para "type: NodePort" salva e sai do arquivo
+
+#Rodar o comando abaixo para identificar a porta que foi gerada para o acesso via https
+kubectl -n kube-system get service
+>NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)         AGE
+>kube-dns               ClusterIP   10.96.0.10       <none>        53/UDP,53/TCP   22h
+>kubernetes-dashboard   NodePort    10.102.216.252   <none>        443:30114/TCP   7m54s
+
+#Acessar via browser usando a porta do pods listado acima
+https:\\192.168.1.10:30114
+
+# Criar um arquivo para criar um usuário de serviço para gerar o token para acessar a inteface https do K8S
+vim dashboard-adminuser.yaml
+## Contudo do arquivo
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+ name: admin-user
+ namespace: kube-system
+ 
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+ name: admin-user
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: ClusterRole
+ name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kube-system
+# Fim do conteudo do arquivo
+
+# Rodar o comando abaixo para aplicar o arquivo YAML criado acima:
+kubectl create -f dashboard-adminuser.yaml
+
+# Rodar o comando abaixo para ver a chave gerada para acesso da interface grafica do K8S
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep admin-user | awk '{print $1}')
+
+# Ele irá trazer as informações abaixo:
+>Name:         admin-user-token-f5v5p
+>Namespace:    kube-system
+>Labels:       <none>
+>Annotations:  kubernetes.io/service-account.name: admin-user
+>              kubernetes.io/service-account.uid: c29ca660-2fdc-11e9-a5a4-52540075dc3d>
+>
+>Type:  kubernetes.io/service-account-token
+>
+>Data
+>====
+>token:      >eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3B>hY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLWY1djVwIiwia3ViZXJuZXR>lcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWN>jb3VudC51aWQiOiJjMjljYTY2MC0yZmRjLTExZTktYTVhNC01MjU0MDA3NWRjM2QiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06YWRtaW4>tdXNlciJ9.QZfyweVuv7jQCgOBLURHZxoqJxzUk8fi1mDSJnkU06YiezJHhR1KAj4egY3nw6Jp_fIa3RVWkE_Iper3T0DArLAtf1x2u8RFeY_myJkP24mZv2nNHYTMXG>T0OM5GI4zUZKInzNyYtOAIxp6KCjTizGoGfOmz5moC1xnWH0QpJ6H7Xk6AReVNk5HjBdNGBiqgregRWT5dSYiOA3IT_3_cEKrWKBA_JKYqCTw59fmPCpE_k_WuAIIzGZ>GxO5XjE_ht6EPV2aXZQPxcJY8nwu3XjzOFXoWHtW9uIuqDbUfSE6lioEGr3gNmhtaNfKWqEBuhlXfFyhX9d5hUnLKW3vVSdQ
+>ca.crt:     1025 bytes
+>namespace:  11 bytes
+
+# Agora basta você acessar a URL com o token acima
+
+# Criar uma namespace de sua escolha
+kubectl create namespace dev
+
+# Criar um deployment no namespace criado
+kubectl create deployment kubernetes-test --image=gcr.io/google-samples/kubernetes-bootcamp:v1 -n dev
+
+# Consultar a criação do pod do comando acima
+kubectl get pods -n dev
+
+# Expor a porta 8080 do deployment feito. Essa é porta do Container
+kubectl expose deployment/kubernetes-test --type="NodePort" --port 8080 -n dev
+
+#  Rodar o comando abaixo para ver qual é a porta que foi exposta pelo cluster
+kubectl get services -n dev
+>NAME              TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+>kubernetes-test   NodePort   10.103.60.121   <none>        8080:32432/TCP   110s
+
+#Acessar via browser o serviço do pod na porta 32432 que foi obtido pelo comando acima, deverá aparecer a msg "Hello Kubernetes bootcamp! | Running on: kubernetes-test-66647f8868-9wcp5 | v=1"
+
+
