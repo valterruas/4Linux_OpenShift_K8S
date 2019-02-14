@@ -4,7 +4,7 @@
 
 Openshift é uma ferramenta da RedHat e é pago, utilizaremos a solução OpenShift Origin que é a versão gratuita
 
-Pré requisito é o Docker 1.13 ou anterior e Openshift 3.13, versões superiores não funciona na data de hoje 14/2/2019. Se for utilizar o vagrant precisa estar na versão 2.2 ou superior
+Pré requisito é o Docker 1.13 ou anterior e Openshift 3.13, versões superiores não funciona na data de hoje 14/2/2019. Se for utilizar o vagrant precisa estar na versão 2.2 ou superior e VirtualBox acima do 5.2
 
 Sempre respeitar a particularidade de rede abaixo:
 192.168.x.x - Rede entre nós
