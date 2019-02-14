@@ -164,7 +164,7 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 >
 >Data
 >====
->token:      >eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3B>hY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLWY1djVwIiwia3ViZXJuZXR>lcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWN>jb3VudC51aWQiOiJjMjljYTY2MC0yZmRjLTExZTktYTVhNC01MjU0MDA3NWRjM2QiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06YWRtaW4>tdXNlciJ9.QZfyweVuv7jQCgOBLURHZxoqJxzUk8fi1mDSJnkU06YiezJHhR1KAj4egY3nw6Jp_fIa3RVWkE_Iper3T0DArLAtf1x2u8RFeY_myJkP24mZv2nNHYTMXG>T0OM5GI4zUZKInzNyYtOAIxp6KCjTizGoGfOmz5moC1xnWH0QpJ6H7Xk6AReVNk5HjBdNGBiqgregRWT5dSYiOA3IT_3_cEKrWKBA_JKYqCTw59fmPCpE_k_WuAIIzGZ>GxO5XjE_ht6EPV2aXZQPxcJY8nwu3XjzOFXoWHtW9uIuqDbUfSE6lioEGr3gNmhtaNfKWqEBuhlXfFyhX9d5hUnLKW3vVSdQ
+>token:      eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJhZG1pbi11c2VyLXRva2VuLWY1djVwIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImFkbWluLXVzZXIiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJjMjljYTY2MC0yZmRjLTExZTktYTVhNC01MjU0MDA3NWRjM2QiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06YWRtaW4tdXNlciJ9.QZfyweVuv7jQCgOBLURHZxoqJxzUk8fi1mDSJnkU06YiezJHhR1KAj4egY3nw6Jp_fIa3RVWkE_Iper3T0DArLAtf1x2u8RFeY_myJkP24mZv2nNHYTMXGT0OM5GI4zUZKInzNyYtOAIxp6KCjTizGoGfOmz5moC1xnWH0QpJ6H7Xk6AReVNk5HjBdNGBiqgregRWT5dSYiOA3IT_3_cEKrWKBA_JKYqCTw59fmPCpE_k_WuAIIzGZGxO5XjE_ht6EPV2aXZQPxcJY8nwu3XjzOFXoWHtW9uIuqDbUfSE6lioEGr3gNmhtaNfKWqEBuhlXfFyhX9d5hUnLKW3vVSdQ
 >ca.crt:     1025 bytes
 >namespace:  11 bytes
 
@@ -189,4 +189,174 @@ kubectl get services -n dev
 
 #Acessar via browser o serviço do pod na porta 32432 que foi obtido pelo comando acima, deverá aparecer a msg "Hello Kubernetes bootcamp! | Running on: kubernetes-test-66647f8868-9wcp5 | v=1"
 
+# Comando para escalar o seus pods
+kubectl scale deployments/kubernetes-test --replicas=4 -n dev
 
+# Comando para consultar o status dos pods do namespace
+kubectl get pods -n dev
+
+# Comando para consultar onde estão cada um de seus pods nos respectivos nós do cluster
+kubectl get pods -n dev -o wide
+
+# Comando para pegar o nome do container dentro do POD
+kubectl describe pods kubernetes-test-66647f8868-7msf8 -n dev
+
+>Containers:
+>  kubernetes-bootcamp:
+>    Container ID:   docker://c2355a620d9cde46d5eda3c0c0622669f19d176a47d15f071a720cd2e290bb03
+>    Image:          gcr.io/google-samples/kubernetes-bootcamp:v1
+
+  
+#Comando para atualizar a imagem do seu deploy
+kubectl set image deployment/kubernetes-test kubernetes-bootcamp=jocatalin/kubernetes-bootcamp:v2 -n dev
+
+# Criando uma atualização de uma imagem com problema para ver que ele não rollouta sem o heath check
+kubectl set image deployment/kubernetes-test kubernetes-bootcamp=gcr.io/google-samples/kubernetes-bootcamp:v10 -n dev
+
+# Se você rodar o comando abaixo você verifcará que está dando erro de imagem
+kubectl get pods -n dev
+
+>NAME                               READY   STATUS             RESTARTS   AGE
+>kubernetes-test-59f7f6dd88-2qh8j   0/1     ImagePullBackOff   0          88s
+>kubernetes-test-59f7f6dd88-48p68   0/1     ErrImagePull       0          88s
+>kubernetes-test-6fd687565d-4kt4r   1/1     Running            0          10m
+>kubernetes-test-6fd687565d-4sjn2   1/1     Running            0          10m
+>kubernetes-test-6fd687565d-6mzxw   1/1     Running            0          10m
+
+# Rodando o comando abaixo e faz rollbakup para a ultima versão deployada
+kubectl rollout undo deployments/kubernetes-test -n dev
+
+# Criar o arquivo aplicacao.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: site-ivar
+spec:
+ 
+ selector:
+  matchLabels:
+   aplicacao: site-ivar
+ 
+ replicas: 2 
+ 
+ template:
+   metadata:
+     labels:
+       aplicacao: site-ivar 
+   spec:
+    containers:
+     - name: site-ivar 
+       image: gpolicante/ivar-site
+       ports:
+       - containerPort: 80 
+#Fim do arquivo
+
+# Rodar o comando abaixo para fazer o deploy
+kubectl create -f aplicacao.yaml -n dev
+kubectl expose deployment/site-ivar -n dev
+# Editar o serviço e mudar o type ClusterIP para NodePort para e salvar, dar um get services para ver a porta exposta
+
+
+
+
+
+## Exemplo de YAML para ingress, nome do arquivo --ingress-dexter.yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-redirect
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  backend:
+    serviceName: default-http-backend
+    servicePort: 80
+  rules:
+  - host: dexter.com.br
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: aplicacao-wordpress
+          servicePort: 80
+#Fim do arquivo
+
+# Para aplicar o ingress rodar o comando abaixo
+kubectl create -f ingress-dexter.yaml -n dev
+
+# Rodr o comando abaixo para ver o nome do ingress criado
+kubectl get ing -n dev
+
+# Para remover o ingress, rodar o comando abaixo
+kubectl delete ingresses ingress-redirect -n dev
+
+
+
+
+###
+# Configurando NFS para o Cluster para VP
+###
+
+yum install nfs-utils -y
+vim /etc/exports
+# Adicionar a linha abaixo no arquivo
+mkdir /srv/data
+chmod 777 /srv/data
+/srv/data 192.168.1.0/24(rw,no_root_squash,no_subtree_check,sync)
+systemctl restart nfs
+showmount -e
+
+#Criar o arquivo nfs.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+ name: nfs 
+spec:
+ capacity:
+  storage: 1Mi
+ accessModes:
+  - ReadWriteMany
+ nfs:
+  server: 192.168.1.10
+  path: "/srv/data"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+     storage: 1Mi
+## Fim do arquivo
+
+# Rodar o comando abaixo para criar o NFS para os pods, observar que se faz necessário informar qual namespace você irá criar
+kubectl create -f nfs.yaml -n dev
+
+# Consultar o persistente volume claim
+kubectl get pvc -n dev
+>NAME   STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+>nfs    Bound    nfs      1Mi        RWX                           63s
+
+# Consultar o persistente volume 
+kubectl get pv -n dev
+>NAME   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM     STORAGECLASS   REASON   AGE
+>nfs    1Mi        RWX            Retain           Bound    dev/nfs                           68s
+
+# Agora vamos subir uma aplicação usando o PVC
+kubectl create -f /vagrant/kubernetes/new/aplicacao2.yaml -n dev
+
+# Ver a porta que subiu no services e Criar o arquivo html no NFS para exibir na aplicação que subiu
+vim /srv/data/index.html
+<marquee>
+<h1>
+MINHA APLICAÇÃO DEVOPS EM KUBERNETES - VALTER 
+</h1>
+</marquee>
+
+#Acessar via browser a sua aplicação
