@@ -48,3 +48,4 @@ oc new-app centos/ruby-25-centos7~https://github.com/gpolicante/python-openshift
 oc new-project bluegreen --display-name="Blue Green Deployment" --description="Blue Green Deployments"
 oc new-app https://github.com/devops-with-openshift/bluegreen#master --name=blue
 oc new-app https://github.com/devops-with-openshift/bluegreen#green  --name=green
+oc expose service blue --name=bluegreen
