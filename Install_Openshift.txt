@@ -28,3 +28,7 @@ Se tiver problema na instalação, realizar a desinstalação e tentar novamente
 /root/openshift-ansible/playbooks/adhoc/uninstall.yml - Caso dê algum erro, na instalação rodar essa playbook para remover todas as variaveis que ficam de sujeira antes de rodar uma nova instalação
 
 
+#Editar o arquivo hosts da maquina hospedeira e adicionar o host "master.okd.os" apontando para o IP 192.168.1.10
+
+# Acessar via browser o endereço https://master.okd.os:8443/ 
+# No primeiro acesso você deve informar um usuário e senha que serão criados automaticamente no primeiro acesso.
