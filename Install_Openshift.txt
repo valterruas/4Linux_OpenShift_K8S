@@ -38,3 +38,8 @@ oc login -u system:admin
 oc adm policy add-scc-to-user anyuid -z default
 oc adm policy add-scc-to-user anyuid system:serviceaccount:opsmx:tiller
 oc adm policy add-scc-to-group anyuid system:authenticated
+
+# Comandos basicos para criar um projeto, entrar dentro dele e criar uma aplicação via CLI
+oc new-project devops
+oc project devops 
+oc new-app centos/ruby-25-centos7~https://github.com/gpolicante/python-openshift.git
