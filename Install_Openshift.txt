@@ -18,3 +18,13 @@ Se tiver problema na instalação, realizar a desinstalação e tentar novamente
 ####################################
                FIM
 ####################################
+
+#Dar um git clone no repo https://github.com/valterruas/openshift-3.11-vagrant
+#Subir a infra pelo Vagrant
+
+# Abaixo as 3 principais playbooks
+/root/openshift-ansible/playbooks/prerequisites.yml - Checa todos os pre-requisitos 
+/root/openshift-ansible/playbooks/deploy_cluster.yml - Faz o Deploy do Cluster
+/root/openshift-ansible/playbooks/adhoc/uninstall.yml - Caso dê algum erro, na instalação rodar essa playbook para remover todas as variaveis que ficam de sujeira antes de rodar uma nova instalação
+
+
